@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graphify.md × SixTen Solutions — Partnership</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #ffffff;
+    --surface: #f8fafc;
+    --surface2: #f1f5f9;
+    --primary: #0f172a;
+    --secondary: #334155;
+    --muted: #64748b;
+    --accent: #2563eb;
+    --accent2: #0891b2;
+    --green: #059669;
+    --border: #e2e8f0;
+    --border-accent: rgba(37, 99, 235, 0.2);
+    --light-accent: rgba(37, 99, 235, 0.04);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--primary);
+    overflow: hidden;
+    height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck { height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 90px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .slide.active { display: flex; opacity: 1; }
+
+  /* Nav */
+  .nav {
+    position: fixed;
+    bottom: 28px;
+    right: 36px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+  .nav button {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  .nav button:hover { color: var(--accent); border-color: var(--accent); }
+
+  .slide-counter {
+    position: fixed;
+    bottom: 34px;
+    left: 36px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    z-index: 100;
+  }
+
+  /* Top bar */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  /* Typography */
+  h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.5px; color: var(--primary); }
+  h2 { font-size: 2rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.3px; color: var(--primary); }
+  h3 { font-size: 1.05rem; font-weight: 600; color: var(--primary); }
+  .subtitle { font-size: 1.15rem; color: var(--secondary); font-weight: 400; line-height: 1.7; max-width: 650px; margin-top: 16px; }
+  .label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .label::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  /* Accent text */
+  .accent { color: var(--accent); }
+  .accent2 { color: var(--accent2); }
+
+  /* Cards */
+  .card-grid { display: grid; gap: 18px; margin-top: 28px; }
+  .card-grid.two { grid-template-columns: 1fr 1fr; }
+  .card-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 24px;
+    transition: all 0.25s;
+  }
+  .card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(37, 99, 235, 0.06); }
+  .card p { color: var(--muted); font-size: 0.9rem; line-height: 1.65; margin-top: 6px; }
+  .card .card-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  /* Flow */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 32px;
+  }
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    text-align: center;
+    flex: 1;
+  }
+  .flow-node.highlight {
+    border-color: var(--accent);
+    background: var(--light-accent);
+  }
+  .flow-arrow {
+    color: var(--border);
+    font-size: 1.8rem;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+  .flow-node .flow-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; font-weight: 600; }
+  .flow-node .flow-title { font-size: 0.92rem; font-weight: 600; color: var(--primary); }
+
+  /* Table */
+  .compare-table { width: 100%; margin-top: 28px; border-collapse: collapse; }
+  .compare-table th {
+    padding: 12px 18px;
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+    background: var(--surface);
+  }
+  .compare-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--secondary);
+    line-height: 1.5;
+  }
+  .compare-table td:first-child { font-weight: 600; color: var(--primary); }
+  .compare-table .before { color: #94a3b8; }
+  .compare-table .after { color: var(--accent); font-weight: 500; }
+
+  /* Logo row */
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 36px;
+  }
+  .logo-box {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+  .logo-divider {
+    font-size: 1.4rem;
+    color: var(--border);
+    font-weight: 300;
+  }
+
+  /* Two col */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; margin-top: 28px; }
+  .col-header { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+  .two-col ul { list-style: none; }
+  .two-col ul li {
+    padding: 9px 0;
+    color: var(--secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .two-col ul li::before {
+    content: '';
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Timeline */
+  .timeline { margin-top: 28px; }
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 24px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .tl-phase {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    padding-top: 2px;
+  }
+  .tl-title { font-weight: 600; font-size: 1rem; margin-bottom: 4px; }
+  .tl-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+  /* Key message */
+  .key-message {
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--secondary);
+    max-width: 720px;
+    margin-top: 24px;
+  }
+  .key-message strong { color: var(--primary); font-weight: 700; }
+
+  /* Stat row */
+  .stat-row { display: flex; gap: 60px; margin-top: 36px; }
+  .stat-block { text-align: left; }
+  .stat-block .stat-val { font-size: 2.4rem; font-weight: 800; color: var(--accent); line-height: 1; }
+  .stat-block .stat-label { font-size: 0.82rem; color: var(--muted); margin-top: 6px; font-weight: 500; }
+
+  /* CTA box */
+  .cta-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-top: 24px;
+  }
+  .cta-box p { color: var(--muted); font-size: 0.92rem; line-height: 1.7; }
+  .cta-box p strong { color: var(--primary); }
+
+  /* Divider line accent */
+  .accent-line {
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  /* Print */
+  @media print {
+    .nav, .slide-counter { display: none; }
+    .slide { display: flex !important; opacity: 1 !important; position: relative !important; page-break-after: always; min-height: 100vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- SLIDE 1: Title -->
+  <div class="slide active" id="s1">
+    <div class="topbar"></div>
+    <div class="logo-row">
+      <div class="logo-box"><span class="accent">Graphify</span><span style="color:var(--muted);font-weight:400;">.md</span></div>
+      <div class="logo-divider">&times;</div>
+      <div class="logo-box" style="color:var(--primary);">SixTen Solutions</div>
+    </div>
+    <h1>Structured Intelligence<br>for Real-World Evidence</h1>
+    <p class="subtitle">A partnership to make SixTen's domain expertise portable, queryable, and compounding — so every AI interaction reflects your best scientific thinking.</p>
+    <div style="margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);">
+      <p style="color: var(--muted); font-size: 0.88rem; line-height: 1.7;">
+        Prepared for <strong style="color:var(--primary);">Sal Russo</strong> & the SixTen Leadership Team<br>
+        March 2026
+      </p>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Key Insight -->
+  <div class="slide" id="s2">
+    <div class="topbar"></div>
+    <div class="label">The Insight</div>
+    <h2>Your deepest competitive advantage<br>is locked inside your team's heads.</h2>
+    <p class="key-message">
+      SixTen has <strong>20+ years</strong> of platform expertise across pharma, clinical epidemiology, and real-world data. That knowledge powers everything — study design, data integration, client delivery.<br><br>
+      But it's <strong>not portable</strong>. When Sean or Greg or Anna aren't in the room, the work slows down. When AI tools are used without that context, the output is generic.
+    </p>
+    <div class="stat-row">
+      <div class="stat-block">
+        <div class="stat-val">20+</div>
+        <div class="stat-label">Years of domain expertise</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-val">5</div>
+        <div class="stat-label">Top-10 pharma clients served</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-val">0%</div>
+        <div class="stat-label">Of that expertise structured for AI</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: What We Do -->
+  <div class="slide" id="s3">
+    <div class="topbar"></div>
+    <div class="label">What Graphify.md Does</div>
+    <h2>We turn domain expertise into<br>structured intelligence.</h2>
+    <div class="flow">
+      <div class="flow-node">
+        <div class="flow-label">Your Expertise</div>
+        <div class="flow-title">Protocols, schemas,<br>SOPs, ontologies</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node highlight">
+        <div class="flow-label">Graphify.md</div>
+        <div class="flow-title">Domain Knowledge<br>Graph</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-node">
+        <div class="flow-label">Result</div>
+        <div class="flow-title">AI that reasons like<br>your best scientist</div>
+      </div>
+    </div>
+    <div class="cta-box" style="margin-top: 32px;">
+      <p><strong>Same AI model. Different structure going in. Dramatically different quality coming out.</strong></p>
+      <p style="margin-top: 8px;">We don't replace your tools or your team. We make everything you already use smarter — by giving AI the context it's missing.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: Four Key Messages -->
+  <div class="slide" id="s4">
+    <div class="topbar"></div>
+    <div class="label">Partnership Value</div>
+    <h2>Four ways this makes SixTen faster.</h2>
+    <div class="card-grid two" style="margin-top: 24px;">
+      <div class="card">
+        <div class="card-num">01</div>
+        <h3>Study Setup Compression</h3>
+        <p>New protocols start with structured context — endpoint relationships, cohort criteria, ICD/CPT mappings — already encoded. Days of variable mapping become hours.</p>
+      </div>
+      <div class="card">
+        <div class="card-num">02</div>
+        <h3>Data Source Integration</h3>
+        <p>When onboarding claims, EMR, labs, or Nordic registry data, the knowledge graph maps schema relationships automatically. Your data model becomes self-documenting.</p>
+      </div>
+      <div class="card">
+        <div class="card-num">03</div>
+        <h3>Expert Availability at Scale</h3>
+        <p>Your senior scientists' expertise becomes queryable — without pulling them off research. Junior analysts, client teams, and partners all get expert-grade context.</p>
+      </div>
+      <div class="card">
+        <div class="card-num">04</div>
+        <h3>Compounding Competitive Moat</h3>
+        <p>Every engagement adds to the knowledge graph. Unlike consulting hours that end, this asset grows. Year 2 is dramatically faster than Year 1.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: Before / After -->
+  <div class="slide" id="s5">
+    <div class="topbar"></div>
+    <div class="label">The Delta</div>
+    <h2>What changes with structured intelligence.</h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th style="width:25%;">Workflow</th>
+          <th style="width:37%;">Today</th>
+          <th style="width:38%;">With Graphify.md</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Study cohort design</td>
+          <td class="before">Manual variable mapping across data sources</td>
+          <td class="after">AI pre-maps variables from graph-encoded relationships</td>
+        </tr>
+        <tr>
+          <td>New data source onboarding</td>
+          <td class="before">Schema reconciliation by tribal knowledge</td>
+          <td class="after">Ontology graph auto-suggests field mappings</td>
+        </tr>
+        <tr>
+          <td>RFP responses</td>
+          <td class="before">Search past proposals, rebuild from templates</td>
+          <td class="after">AI surfaces relevant capabilities and case context</td>
+        </tr>
+        <tr>
+          <td>Analyst onboarding</td>
+          <td class="before">Months of shadowing senior scientists</td>
+          <td class="after">Knowledge graph is the mentor — structured, always on</td>
+        </tr>
+        <tr>
+          <td>Client deliverables</td>
+          <td class="before">Every output requires senior review</td>
+          <td class="after">Domain-aware AI drafts with expert context built in</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SLIDE 6: Economics -->
+  <div class="slide" id="s6">
+    <div class="topbar"></div>
+    <div class="label">The Economics</div>
+    <h2>Speed is the revenue lever.</h2>
+    <p class="key-message" style="font-size: 1.15rem;">
+      SixTen runs on long-term contracts with high-value clients. The constraint isn't demand — it's <strong>throughput</strong>. Every week saved on study setup, data mapping, or deliverable review is a week that can serve another client or deepen an existing engagement.
+    </p>
+    <div class="card-grid two" style="margin-top: 28px;">
+      <div class="card" style="border-left: 3px solid var(--accent);">
+        <h3>Capacity Unlock</h3>
+        <p>When structured intelligence handles the repetitive context-building, your senior scientists spend more time on <strong style="color:var(--primary);">high-value work</strong> — study design, client strategy, publication-grade analysis. Same team, higher throughput.</p>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--accent2);">
+        <h3>Engagement Velocity</h3>
+        <p>Faster study setup means <strong style="color:var(--primary);">faster time-to-results</strong> for pharma clients. That speed premium is real — clients pay more for partners who deliver ahead of timeline, not just on budget.</p>
+      </div>
+      <div class="card" style="border-left: 3px solid var(--green);">
+        <h3>Scalable Without Headcount</h3>
+        <p>The typical path to growth is hiring more scientists. Knowledge graphs let you <strong style="color:var(--primary);">scale expertise without scaling payroll</strong>. Junior team members perform at a higher level, faster.</p>
+      </div>
+      <div class="card" style="border-left: 3px solid #8b5cf6;">
+        <h3>Compounding Asset</h3>
+        <p>Every engagement feeds the graph. By Year 2, new client onboarding is <strong style="color:var(--primary);">dramatically faster</strong>. By Year 3, the graph is a competitive moat no competitor can replicate — because it encodes <em>your</em> expertise.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: What Each Side Brings -->
+  <div class="slide" id="s7">
+    <div class="topbar"></div>
+    <div class="label">Partnership Fit</div>
+    <h2>SixTen has the domain.<br>Graphify.md has the structure.</h2>
+    <div class="two-col">
+      <div>
+        <div class="col-header" style="color: var(--primary);">SixTen Solutions</div>
+        <ul>
+          <li>Biotech/pharma data platform mastery (CLiPPeR, RAPTOR)</li>
+          <li>Relationships across Amgen, AstraZeneca, Genentech, Lilly, Sanofi</li>
+          <li>Unique Nordic health registry access</li>
+          <li>Peer-reviewed scientific credibility</li>
+          <li>HIPAA + GDPR compliant infrastructure</li>
+          <li>Real scientists solving real clinical problems</li>
+        </ul>
+      </div>
+      <div>
+        <div class="col-header" style="color: var(--accent);">Graphify.md</div>
+        <ul>
+          <li>Knowledge graph engineering — expertise into structured intelligence</li>
+          <li>AI context layer that makes any model domain-aware</li>
+          <li>Intelligence sprints — weeks, not months</li>
+          <li>Portable format across Claude, GPT, Gemini, internal tools</li>
+          <li>Proven methodology across healthcare, defense, legal, finance</li>
+          <li>Force multiplier for your team — not a replacement</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Engagement Path -->
+  <div class="slide" id="s8">
+    <div class="topbar"></div>
+    <div class="label">Engagement Model</div>
+    <h2>Start small. Prove fast. Scale what works.</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="tl-phase">Phase 1<br>Sprint</div>
+        <div>
+          <div class="tl-title">One domain. One knowledge graph. Measurable results.</div>
+          <div class="tl-desc">Pick a high-value area — a therapeutic domain, a data source, a client workflow. Graphify.md builds the graph. SixTen validates. We measure the delta together.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-phase">Phase 2<br>Expand</div>
+        <div>
+          <div class="tl-title">Build a library of SixTen-specific intelligence.</div>
+          <div class="tl-desc">Proven results unlock additional domains — study types, data models, regulatory frameworks, client engagement patterns. Each graph compounds the value.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-phase">Phase 3<br>Embed</div>
+        <div>
+          <div class="tl-title">Intelligence becomes part of SixTen's platform DNA.</div>
+          <div class="tl-desc">New studies, new clients, new data sources — all start with structured intelligence. A competitive advantage that deepens with every engagement.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: Close -->
+  <div class="slide" id="s9">
+    <div class="topbar"></div>
+    <div class="accent-line"></div>
+    <div class="logo-row" style="margin-bottom: 24px;">
+      <div class="logo-box"><span class="accent">Graphify</span><span style="color:var(--muted);font-weight:400;">.md</span></div>
+      <div class="logo-divider">&times;</div>
+      <div class="logo-box">SixTen Solutions</div>
+    </div>
+    <h1 style="font-size: 2.4rem;">The intelligence<br>is the product.</h1>
+    <p class="key-message" style="font-size: 1.15rem; max-width: 620px;">
+      SixTen's scientists bring decades of domain mastery. Graphify.md makes that mastery <strong>portable, queryable, and compounding</strong> — so every AI interaction reflects your best scientific thinking.
+    </p>
+    <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; gap: 48px;">
+      <div>
+        <p style="font-weight: 700; font-size: 0.95rem;">Dan Yarmoluk</p>
+        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 4px;">Founder, Graphify.md</p>
+      </div>
+      <div style="padding-top: 2px;">
+        <p style="color: var(--muted); font-size: 0.85rem;">daniel.yarmoluk@gmail.com</p>
+        <p style="color: var(--accent); font-size: 0.85rem; margin-top: 2px;">calendly.com/daniel-yarmoluk/30min</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation -->
+<div class="slide-counter"><span id="current">1</span> / <span id="total">9</span></div>
+<div class="nav">
+  <button onclick="prev()">&larr;</button>
+  <button onclick="next()">&rarr;</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let idx = 0;
+
+  function show(i) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[i].classList.add('active');
+    document.getElementById('current').textContent = i + 1;
+  }
+
+  function next() { if (idx < slides.length - 1) { idx++; show(idx); } }
+  function prev() { if (idx > 0) { idx--; show(idx); } }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  });
+
+  let touchX = 0;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (dx < -50) next();
+    if (dx > 50) prev();
+  });
+</script>
+
+</body>
+</html>
